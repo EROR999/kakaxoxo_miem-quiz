@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Какое направление МИЭМ твоё?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow lab-instrument column; a signal-trace progress bar on top, one question card at a time */
+:root {
+  --bg: #eef1f5;
+  --surface: #ffffff;
+  --ink: #131c2b;
+  --muted: #5a6577;
+  --line: #d4dae4;
+  --accent: #2442e0;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3e8ff;
+  --c-ivt: #2442e0;
+  --c-ib: #0f8a6a;
+  --c-kb: #c2410c;
+  --c-pm: #7c3aed;
+  --c-ctt: #0e7490;
+  --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body: "Golos Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d121b; --surface: #151c29; --ink: #e8ecf3; --muted: #93a0b5; --line: #273246;
+    --accent: #7d92ff; --accent-ink: #0d121b; --accent-soft: #1d2645;
+    --c-ivt: #7d92ff; --c-ib: #3ccfa5; --c-kb: #fb8a4c; --c-pm: #b294ff; --c-ctt: #3cc4dd;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d121b; --surface: #151c29; --ink: #e8ecf3; --muted: #93a0b5; --line: #273246;
+  --accent: #7d92ff; --accent-ink: #0d121b; --accent-soft: #1d2645;
+  --c-ivt: #7d92ff; --c-ib: #3ccfa5; --c-kb: #fb8a4c; --c-pm: #b294ff; --c-ctt: #3cc4dd;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 16px; line-height: 1.5;
+  padding-inline: 16px; padding-block: 28px 48px;
+}
+.wrap { max-width: 620px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.eyebrow {
+  font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(26px, 6vw, 38px); line-height: 1.1; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h2 { font-family: var(--f-display); font-weight: 500; font-size: clamp(19px, 4.4vw, 23px); line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.lead { color: var(--muted); max-width: 60ch; }
+
+.trace { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+.trace span { height: 6px; border-radius: 2px; background: var(--line); transition: background .25s; }
+.trace span.done { background: var(--accent); }
+.trace span.now { background: var(--accent); opacity: .45; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px 20px; display: flex; flex-direction: column; gap: 18px; }
+.opts { display: flex; flex-direction: column; gap: 10px; }
+.opt {
+  font: inherit; color: var(--ink); text-align: left; cursor: pointer;
+  background: var(--bg); border: 1.5px solid transparent; border-radius: 10px;
+  padding: 13px 14px; display: flex; gap: 12px; align-items: flex-start;
+  transition: border-color .15s, background .15s;
+}
+.opt:hover { border-color: var(--accent); }
+.opt:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.opt.picked { border-color: var(--accent); background: var(--accent-soft); }
+.opt .k { font-family: var(--f-mono); font-size: 13px; color: var(--muted); padding-top: 2px; min-width: 1.2em; }
+.nav { display: flex; justify-content: space-between; gap: 12px; }
+.btn {
+  font: inherit; font-weight: 600; cursor: pointer; border-radius: 10px; padding: 12px 18px;
+  border: 1.5px solid var(--line); background: transparent; color: var(--ink);
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.result-tag { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.result-name { font-family: var(--f-display); font-weight: 700; font-size: clamp(24px, 5.6vw, 32px); line-height: 1.15; color: var(--hue); text-wrap: balance; }
+.result-code { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cols > div { min-width: 0; }
+.cols h3 { font-size: 13px; font-family: var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 6px; font-weight: 500; }
+.cols ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+@media (max-width: 520px) { .cols { grid-template-columns: 1fr; } }
+
+.bars { display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: minmax(0, 1fr) 3.2em; gap: 4px 10px; align-items: center; font-size: 14px; }
+.bar .lbl { min-width: 0; }
+.bar .pct { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--muted); }
+.bar .track { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--bg); overflow: hidden; }
+.bar .fill { height: 100%; border-radius: 4px; background: var(--hue); width: 0; transition: width .6s ease-out; }
+.note { font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<main class="wrap">
+  <div class="eyebrow"><span>МИЭМ НИУ ВШЭ · профориентация</span><span id="counter">5 направлений · 10 вопросов</span></div>
+  <h1 id="title">Какое направление МИЭМ тебе подходит?</h1>
+  <div class="trace" id="trace" aria-hidden="true"></div>
+  <section class="card" id="screen" aria-live="polite"></section>
+  <p class="note">Учебный проект для курса «Введение в специальность». Это не официальный тест университета: результат подсказывает направление, но не заменяет знакомство с программами.</p>
+</main>
+
+<script>
+const DIRS = {
+  ivt: { name: "Информатика и вычислительная техника", code: "09.03.01 · бакалавриат",
+    about: "Ты любишь понимать, как компьютер устроен целиком: от процессора и микросхем до операционной системы и приложений. Тебе интересно не просто писать код, а собирать работающие системы.",
+    study: ["Архитектура ЭВМ и схемотехника", "Программирование на C/C++ и Python", "Операционные системы и сети", "Встраиваемые системы и микроконтроллеры"],
+    jobs: ["Разработчик ПО", "Инженер встраиваемых систем", "Системный архитектор", "DevOps-инженер"] },
+  ib: { name: "Информационная безопасность", code: "10.03.01 · бакалавриат",
+    about: "Тебя привлекает защита данных и инфраструктуры компаний: найти слабое место, выстроить защиту, расследовать инцидент. Тебе важны и технологии, и правила, по которым они работают.",
+    study: ["Защита сетей и операционных систем", "Аудит и управление рисками", "Правовые основы защиты информации", "Мониторинг и расследование инцидентов"],
+    jobs: ["Аналитик SOC", "Специалист по защите информации", "Аудитор ИБ", "Инженер по сетевой безопасности"] },
+  kb: { name: "Компьютерная безопасность", code: "10.05.01 · специалитет",
+    about: "Тебе нравится копать глубоко: разбирать чужой код, искать уязвимости и понимать математику, на которой держатся шифры. Это самое «математическое» и исследовательское направление в безопасности.",
+    study: ["Криптография и теория чисел", "Реверс-инжиниринг и анализ ПО", "Поиск уязвимостей", "Математическая логика и дискретная математика"],
+    jobs: ["Пентестер", "Криптограф", "Вирусный аналитик", "Исследователь уязвимостей"] },
+  pm: { name: "Прикладная математика", code: "01.03.04 · бакалавриат",
+    about: "Ты мыслишь формулами и моделями. Тебе интересно описать реальный процесс математически, найти оптимальное решение и проверить его на компьютере.",
+    study: ["Математический анализ и линейная алгебра", "Численные методы и моделирование", "Теория вероятностей и статистика", "Машинное обучение и анализ данных"],
+    jobs: ["Data Scientist", "Инженер ML", "Аналитик-исследователь", "Квант-аналитик"] },
+  ctt: { name: "Цифровые технологии и телекоммуникации", code: "11.03.02 · бакалавриат",
+    about: "Тебя восхищает, как информация летит через эфир и провода: радио, сотовые сети, спутники, интернет вещей. Ты хочешь строить связь, которой пользуются миллионы.",
+    study: ["Теория сигналов и цифровая обработка", "Беспроводные сети и 5G", "Радиотехника и антенны", "Интернет вещей и сетевые протоколы"],
+    jobs: ["Инженер связи", "Сетевой инженер", "Разработчик IoT-систем", "Инженер по радиосистемам"] },
+};
+const ORDER = ["ivt", "ib", "kb", "pm", "ctt"];
+
+const QUESTIONS = [
+  { q: "Какой школьный предмет тебе больше всего нравится?", a: {
+    ivt: "Информатика, особенно программирование", ib: "Обществознание и право, но с уклоном в технологии",
+    kb: "Олимпиадная математика и задачи на логику", pm: "Алгебра и геометрия: люблю доказывать",
+    ctt: "Физика, особенно электричество и волны" } },
+  { q: "Тебе дали свободный вечер и ноутбук. Что ты сделаешь?", a: {
+    ivt: "Напишу свою программу или маленькую игру", ib: "Настрою себе VPN, менеджер паролей и двухфакторку везде",
+    kb: "Порешаю CTF-задачи или разберу, как устроена чужая программа", pm: "Посчитаю что-нибудь интересное в Python или Excel",
+    ctt: "Разберусь, почему дома плохо ловит Wi-Fi, и починю это" } },
+  { q: "Что бы ты собрал своими руками?", a: {
+    ivt: "Робота на Arduino или Raspberry Pi", ib: "Домашний сервер с правильно настроенной защитой",
+    kb: "Свою систему шифрования сообщений", pm: "Симуляцию: как распространяется вирус или движутся планеты",
+    ctt: "Радиоприёмник или метеостанцию, которая передаёт данные по воздуху" } },
+  { q: "Какая новость зацепит тебя сильнее всего?", a: {
+    ivt: "Вышел новый процессор, который в два раза быстрее прежнего", ib: "Крупная компания потеряла данные клиентов из-за утечки",
+    kb: "Найдена уязвимость в популярном алгоритме шифрования", pm: "Нейросеть предсказала погоду точнее, чем метеорологи",
+    ctt: "В России запускают сети 6G и спутниковый интернет" } },
+  { q: "Какая роль в командном проекте тебе ближе?", a: {
+    ivt: "Пишу основной код и собираю всё в работающий продукт", ib: "Слежу, чтобы всё было надёжно, и составляю правила работы",
+    kb: "Ищу ошибки и слабые места, которые пропустили другие", pm: "Придумываю алгоритм и считаю, как сделать оптимально",
+    ctt: "Отвечаю за связь: чтобы устройства и сервисы общались друг с другом" } },
+  { q: "Какая задача кажется тебе самой интересной?", a: {
+    ivt: "Ускорить программу, чтобы она работала в 10 раз быстрее", ib: "Расследовать, как хакер проник в сеть компании",
+    kb: "Взломать шифр, не зная ключа", pm: "Найти закономерность в огромной таблице данных",
+    ctt: "Передать видео без задержек на другой конец страны" } },
+  { q: "Как ты относишься к математике?", a: {
+    ivt: "Использую, когда она нужна для программы", ib: "Нормально, но мне важнее понимать, как устроены системы",
+    kb: "Люблю дискретную математику и теорию чисел", pm: "Это мой главный инструмент, хочу знать её глубоко",
+    ctt: "Нравится, когда она описывает реальные процессы: волны, сигналы" } },
+  { q: "Какое место работы тебя привлекает?", a: {
+    ivt: "IT-компания, где делают продукты для миллионов", ib: "Отдел безопасности банка или крупной корпорации",
+    kb: "Лаборатория, которая исследует вирусы и уязвимости", pm: "Исследовательский центр или команда Data Science",
+    ctt: "Оператор связи или компания, которая делает спутники" } },
+  { q: "Какой фильм или сериал тебе ближе?", a: {
+    ivt: "«Кремниевая долина»: стартап, код и продукт", ib: "Сериал про команду, которая защищает город от кибератак",
+    kb: "«Мистер Робот»: хакеры и взломы", pm: "«Игры разума»: гений и его математика",
+    ctt: "«Интерстеллар»: связь с кораблём на другом конце космоса" } },
+  { q: "Что ты хочешь уметь через 4–5 лет?", a: {
+    ivt: "Проектировать сложные программные и аппаратные системы", ib: "Защищать инфраструктуру целой компании от атак",
+    kb: "Находить уязвимости, которые не видит никто", pm: "Строить модели, которые предсказывают будущее",
+    ctt: "Проектировать сети связи для городов и регионов" } },
+];
+
+// Shuffle option order per question once, so answers don't sit in a fixed pattern
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const optionOrder = QUESTIONS.map(() => shuffle(ORDER));
+
+let step = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+
+const screen = document.getElementById("screen");
+const trace = document.getElementById("trace");
+const counter = document.getElementById("counter");
+
+function renderTrace() {
+  trace.innerHTML = QUESTIONS.map((_, i) => {
+    const cls = step >= QUESTIONS.length || answers[i] !== null && i !== step ? "done" : i === step ? "now" : "";
+    return `<span class="${cls}"></span>`;
+  }).join("");
+}
+
+function renderStart() {
+  counter.textContent = "5 направлений · 10 вопросов";
+  screen.innerHTML = `
+    <h2>Ответь на 10 вопросов, и мы подскажем, какое из пяти направлений МИЭМ тебе ближе</h2>
+    <p class="lead">Выбирай вариант, который откликается сильнее всего. Правильных и неправильных ответов нет. Займёт около двух минут.</p>
+    <div class="nav"><span></span><button class="btn primary" id="go">Начать</button></div>`;
+  document.getElementById("go").onclick = () => { step = 0; render(); };
+}
+
+function renderQuestion() {
+  const Q = QUESTIONS[step];
+  counter.textContent = `Вопрос ${step + 1} из ${QUESTIONS.length}`;
+  const letters = "АБВГД";
+  screen.innerHTML = `
+    <h2>${Q.q}</h2>
+    <div class="opts" role="radiogroup">
+      ${optionOrder[step].map((k, i) => `
+        <button class="opt${answers[step] === k ? " picked" : ""}" data-k="${k}" role="radio" aria-checked="${answers[step] === k}">
+          <span class="k">${letters[i]}</span><span>${Q.a[k]}</span>
+        </button>`).join("")}
+    </div>
+    <div class="nav">
+      <button class="btn" id="back"${step === 0 ? " disabled" : ""}>Назад</button>
+      <button class="btn primary" id="next"${answers[step] === null ? " disabled" : ""}>${step === QUESTIONS.length - 1 ? "Узнать результат" : "Дальше"}</button>
+    </div>`;
+  screen.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+    answers[step] = b.dataset.k;
+    // advance automatically after a short beat so the choice is visible
+    screen.querySelectorAll(".opt").forEach(o => { o.classList.toggle("picked", o === b); o.setAttribute("aria-checked", o === b); });
+    document.getElementById("next").disabled = false;
+    setTimeout(() => { step++; render(); }, 260);
+  });
+  document.getElementById("back").onclick = () => { if (step > 0) { step--; render(); } };
+  document.getElementById("next").onclick = () => { if (answers[step] !== null) { step++; render(); } };
+}
+
+function renderResult() {
+  counter.textContent = "Результат";
+  const score = Object.fromEntries(ORDER.map(k => [k, 0]));
+  answers.forEach(k => score[k]++);
+  // Tie-break: the direction chosen on the later (more decisive) questions wins
+  const ranked = ORDER.slice().sort((a, b) => score[b] - score[a] || answers.lastIndexOf(b) - answers.lastIndexOf(a));
+  const top = DIRS[ranked[0]];
+  const hue = `var(--c-${ranked[0]})`;
+  screen.style.setProperty("--hue", hue);
+  screen.innerHTML = `
+    <div class="result-tag">Тебе подходит направление</div>
+    <div class="result-name">${top.name}</div>
+    <div class="result-code">${top.code}</div>
+    <p>${top.about}</p>
+    <div class="cols">
+      <div><h3>Что будешь изучать</h3><ul>${top.study.map(s => `<li>${s}</li>`).join("")}</ul></div>
+      <div><h3>Кем сможешь работать</h3><ul>${top.jobs.map(s => `<li>${s}</li>`).join("")}</ul></div>
+    </div>
+    <div class="bars">
+      <h3 class="result-tag" style="margin:0">Совпадение со всеми направлениями</h3>
+      ${ranked.map(k => `
+        <div class="bar" style="--hue: var(--c-${k})">
+          <span class="lbl">${DIRS[k].name}</span><span class="pct">${score[k] * 10}%</span>
+          <div class="track"><div class="fill" data-w="${score[k] * 10}"></div></div>
+        </div>`).join("")}
+    </div>
+    <div class="nav"><button class="btn" id="back">Изменить ответы</button><button class="btn primary" id="again">Пройти заново</button></div>`;
+  requestAnimationFrame(() => requestAnimationFrame(() =>
+    screen.querySelectorAll(".fill").forEach(f => f.style.width = f.dataset.w + "%")));
+  document.getElementById("again").onclick = () => { answers.fill(null); step = -1; render(); };
+  document.getElementById("back").onclick = () => { step = QUESTIONS.length - 1; render(); };
+}
+
+function render() {
+  renderTrace();
+  if (step < 0) renderStart();
+  else if (step >= QUESTIONS.length) renderResult();
+  else renderQuestion();
+}
+step = -1;
+render();
+</script>
+</body>
+</html>
